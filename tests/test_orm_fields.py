@@ -117,3 +117,36 @@ def test_lookup_field():
         and rv_to_internal[1] == '2000-02-02T03:04:05.000Z'
         and rv_to_internal[2] == '2000-03-02T03:04:05.000Z'
     )
+    
+    
+def test_phone_field():
+    class T:
+        phone = f.PhoneField("Phone")
+        
+    field = T.__dict__["phone"]
+    
+    received_values = [
+        '9876543210',
+        '987-654-3210',
+        '(987) 654-3210',
+        '987 654 3210',
+        '987.654.3210',
+        '+1 987.654.3210',
+        '+1 (987) 654.3210',
+        '+19876543210',
+    ]
+    
+    for value in received_values:
+        t = T()
+        t.phone = value
+        
+        rv_e164 = field.to_internal_value(value)
+        rv_str = field.to_record_value(value)
+        
+        print(value)
+        
+        assert rv_e164 == '+19876543210'
+        assert rv_str == '+1 987-654-3210'
+        assert t.phone == '+1 987-654-3210'
+        
+    
